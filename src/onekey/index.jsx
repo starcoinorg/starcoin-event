@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Modal, Form, Input, Cascader, Button, message } from 'antd';
 import BigNumber from 'bignumber.js';
 import { arrayify, hexlify } from '@ethersproject/bytes';
-import { providers, utils, bcs, encoding } from '@starcoin/starcoin';
+import { providers, utils, bcs } from '@starcoin/starcoin';
 import StarMaskOnboarding from '@starcoin/starmask-onboarding';
 import area from './area';
 import stc from '../assets/onekey/STC.png';
@@ -17,7 +17,6 @@ import staff7 from '../assets/onekey/7.png';
 import './index.css';
 
 const FormItem = Form.Item;
-let starcoinProvider = new providers.Web3Provider(window.starcoin, 'any');
 
 const toAccount = '0x60A8349933B39a54a007bf882dE6bA03';
 const functionId = '0x1::TransferScripts::peer_to_peer_v2';
@@ -28,7 +27,6 @@ const sendAmount = 600;
 const BIG_NUMBER_NANO_STC_MULTIPLIER = new BigNumber('1000000000');
 const sendAmountSTC = new BigNumber(String(sendAmount), 10);
 const sendAmountNanoSTC = sendAmountSTC.times(BIG_NUMBER_NANO_STC_MULTIPLIER);
-const sendAmountHex = `0x${sendAmountNanoSTC.toString(16)}`;
 
 const Index = () => {
   const [visible, setVisible] = useState(false);
@@ -69,6 +67,7 @@ const Index = () => {
           },
         });
       } else {
+        let starcoinProvider = new providers.Web3Provider(window.starcoin, 'any');
         let connectedAccounts = await window.starcoin.request({
           method: 'stc_accounts',
         });
@@ -212,10 +211,7 @@ const Index = () => {
         </Form>
       </Modal>
       <img src={stc} alt="stc" className="img" />
-      <div className="title">
-        <span>【活动介绍】</span>
-      </div>
-      <div className="detail" style={{ marginBottom: 16 }}>
+      <div className="detail" style={{ margin: '16px 0' }}>
         <i>优惠一：</i>
         <div>原价：￥499</div>
         <div>使用STC购买价：600个STC</div>
