@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ethersproject/bytes": "^5.4.0",
     "@starcoin/starcoin": "^1.4.3",
     "@starcoin/starmask-onboarding": "^1.0.0",
     "@testing-library/jest-dom": "^5.11.4",

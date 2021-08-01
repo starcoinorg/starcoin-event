@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Modal, Form, Input, Cascader, Button } from 'antd';
+import { Modal, Form, Input, Cascader, Button, message } from 'antd';
 import BigNumber from 'bignumber.js';
-import { providers } from '@starcoin/starcoin';
+import { arrayify, hexlify } from '@ethersproject/bytes';
+import { providers, utils, bcs, encoding } from '@starcoin/starcoin';
 import StarMaskOnboarding from '@starcoin/starmask-onboarding';
 import area from './area';
 import stc from '../assets/onekey/STC.png';
@@ -16,9 +17,12 @@ import staff7 from '../assets/onekey/7.png';
 import './index.css';
 
 const FormItem = Form.Item;
-let starcoinProvider = new providers.Web3Provider(window.starcoin, 'any')
+let starcoinProvider = new providers.Web3Provider(window.starcoin, 'any');
 
 const toAccount = '0x60A8349933B39a54a007bf882dE6bA03';
+const functionId = '0x1::TransferScripts::peer_to_peer_v2';
+const strTypeArgs = ['0x1::STC::STC'];
+const tyArgs = utils.tx.encodeStructTypeTags(strTypeArgs);
 
 const sendAmount = 600;
 const BIG_NUMBER_NANO_STC_MULTIPLIER = new BigNumber('1000000000');
@@ -78,16 +82,35 @@ const Index = () => {
           onBoardingRef.current.stopOnboarding();
         }
         console.log('connectedAccounts: ', connectedAccounts);
-        const transactionHash = await starcoinProvider.getSigner().sendUncheckedTransaction({
-          to: toAccount,
-          value: sendAmountHex,
-          gasLimit: 127845,
-          gasPrice: 1,
-        })
-        console.log('transactionHash: ', transactionHash)
+        const amountSCSHex = (function () {
+          const se = new bcs.BcsSerializer();
+          // eslint-disable-next-line no-undef
+          se.serializeU128(BigInt(sendAmountNanoSTC.toString(10)));
+          return hexlify(se.getBytes());
+        })();
+        const args = [arrayify(toAccount), arrayify(amountSCSHex)];
+
+        const scriptFunction = utils.tx.encodeScriptFunction(
+          functionId,
+          tyArgs,
+          args
+        );
+        const payloadInHex = (function () {
+          const se = new bcs.BcsSerializer();
+          scriptFunction.serialize(se);
+          return hexlify(se.getBytes());
+        })();
+        console.log('payloadInHex: ', payloadInHex)
+        const transactionHash = await starcoinProvider
+          .getSigner()
+          .sendUncheckedTransaction({
+            data: payloadInHex,
+          });
+        console.log('transactionHash: ', transactionHash);
       }
     } catch (e) {
       console.log(e);
+      message.error('购买失败')
     }
   };
 
