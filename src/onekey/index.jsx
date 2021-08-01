@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Modal, Form, Input, Cascader, Button } from 'antd';
+import BigNumber from 'bignumber.js';
+import { providers, utils, bcs, encoding } from '@starcoin/starcoin';
+import StarMaskOnboarding from '@starcoin/starmask-onboarding';
 import area from './area';
 import stc from '../assets/onekey/STC.png';
 import staff0 from '../assets/onekey/0.png';
@@ -13,12 +16,86 @@ import staff7 from '../assets/onekey/7.png';
 import './index.css';
 
 const FormItem = Form.Item;
+let starcoinProvider = new providers.Web3Provider(window.starcoin, 'any')
+
+const toAccount = '0x60A8349933B39a54a007bf882dE6bA03';
+
+const sendAmount = 600;
+const BIG_NUMBER_NANO_STC_MULTIPLIER = new BigNumber('1000000000');
+const sendAmountSTC = new BigNumber(String(sendAmount), 10);
+const sendAmountNanoSTC = sendAmountSTC.times(BIG_NUMBER_NANO_STC_MULTIPLIER);
+const sendAmountHex = `0x${sendAmountNanoSTC.toString(16)}`;
 
 const Index = () => {
   const [visible, setVisible] = useState(false);
   const [disabled, setDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const onBoardingRef = useRef(null);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      const currentUrl = new URL(window.location.href);
+      const forwarderOrigin =
+        currentUrl.hostname === 'localhost'
+          ? 'http://localhost:9032'
+          : undefined;
+      try {
+        onBoardingRef.current = new StarMaskOnboarding({ forwarderOrigin });
+      } catch (error) {
+        console.error(error);
+      }
+      const isStarMaskInstalled = StarMaskOnboarding.isStarMaskInstalled();
+      console.log('isStarMaskInstalled: ', isStarMaskInstalled);
+      if (!isStarMaskInstalled) {
+        Modal.confirm({
+          title: '提示',
+          content: '检测到您未安装钱包，请先安装starmask钱包再进行购买',
+          cancelButtonProps: { style: { display: 'none' } },
+          okText: '去安装',
+          onOk() {
+            onBoardingRef.current.startOnboarding();
+            Modal.confirm({
+              title: '提示',
+              content: '您是否已完成安装starmask钱包？',
+              okText: '已完成',
+              cancelText: '未完成',
+              onOk() {
+                handleConfirm();
+              },
+            });
+          },
+        });
+      } else {
+        let connectedAccounts = await window.starcoin.request({
+          method: 'stc_accounts',
+        });
+        if (!connectedAccounts.length) {
+          // 如果检测到未连接，则调用连接方法
+          connectedAccounts = await window.starcoin.request({
+            method: 'stc_requestAccounts',
+          });
+        } else {
+          // 如果检测到已连接，则停止轮询
+          onBoardingRef.current.stopOnboarding();
+        }
+        console.log('connectedAccounts: ', connectedAccounts);
+        const transactionHash = await starcoinProvider.getSigner().sendUncheckedTransaction({
+          to: toAccount,
+          value: sendAmountHex,
+          gasLimit: 127845,
+          gasPrice: 1,
+        })
+        console.log('transactionHash: ', transactionHash)
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <Modal
@@ -29,8 +106,8 @@ const Index = () => {
         }}
         onOk={async () => {
           const values = await form.validateFields();
-          console.log('values: ', values)
-          setVisible(false)
+          console.log('values: ', values);
+          setVisible(false);
         }}
       >
         <Form
@@ -141,11 +218,23 @@ const Index = () => {
           danger
           size="large"
           disabled={disabled}
+          loading={loading}
+          onClick={handleConfirm}
+          style={{ marginRight: 8 }}
+        >
+          立即购买
+        </Button>
+        <Button
+          shape="round"
+          type="primary"
+          danger
+          size="large"
+          disabled={disabled}
           onClick={() => {
             setVisible(true);
           }}
         >
-          立即购买
+          填写收货地址
         </Button>
       </div>
       <img src={staff0} alt="stc" className="img" />

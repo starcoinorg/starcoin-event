@@ -4971,8 +4971,6 @@ function decodeSourceData() {
   });
 }
 
-console.log('ret: ', ret);
-
 decodeSourceData();
 
 export default ret;
