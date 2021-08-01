@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Modal, Form, Input, Cascader, Button } from 'antd';
 import BigNumber from 'bignumber.js';
-import { providers, utils, bcs, encoding } from '@starcoin/starcoin';
+import { providers } from '@starcoin/starcoin';
 import StarMaskOnboarding from '@starcoin/starmask-onboarding';
 import area from './area';
 import stc from '../assets/onekey/STC.png';
@@ -28,13 +28,10 @@ const sendAmountHex = `0x${sendAmountNanoSTC.toString(16)}`;
 
 const Index = () => {
   const [visible, setVisible] = useState(false);
-  const [disabled, setDisabled] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const onBoardingRef = useRef(null);
 
   const handleConfirm = async () => {
-    setLoading(true);
     try {
       const currentUrl = new URL(window.location.href);
       const forwarderOrigin =
@@ -91,8 +88,6 @@ const Index = () => {
       }
     } catch (e) {
       console.log(e);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -217,8 +212,6 @@ const Index = () => {
           type="primary"
           danger
           size="large"
-          disabled={disabled}
-          loading={loading}
           onClick={handleConfirm}
           style={{ marginRight: 8 }}
         >
@@ -229,7 +222,6 @@ const Index = () => {
           type="primary"
           danger
           size="large"
-          disabled={disabled}
           onClick={() => {
             setVisible(true);
           }}
