@@ -1,0 +1,28 @@
+.img {
+  width: 100%;
+}
+.title {
+  text-align: center;
+}
+
+.title span{
+  background-color: rgb(251, 255, 0);
+}
+
+.detail i{
+  color: #ffffff;
+  margin-bottom: 8px;
+  display: inline-block;
+  background-color: red;
+}
+.detail div{
+  font-weight: bold;
+}
+.modal {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+}
