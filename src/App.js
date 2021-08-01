@@ -11,7 +11,10 @@ function App() {
         <Router>
           <Switch>
             <Route path="/onekey">
-              <Onekey title="xxx" />
+              <Onekey />
+            </Route>
+            <Route path="/">
+              <Onekey />
             </Route>
           </Switch>
         </Router>
