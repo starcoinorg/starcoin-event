@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js';
 import { arrayify, hexlify } from '@ethersproject/bytes';
 import { providers, utils, bcs } from '@starcoin/starcoin';
 import StarMaskOnboarding from '@starcoin/starmask-onboarding';
+import request from '../utils/request';
 import area from './area';
 import stc from '../assets/onekey/STC.png';
 import staff0 from '../assets/onekey/0.png';
@@ -67,7 +68,10 @@ const Index = () => {
           },
         });
       } else {
-        let starcoinProvider = new providers.Web3Provider(window.starcoin, 'any');
+        let starcoinProvider = new providers.Web3Provider(
+          window.starcoin,
+          'any'
+        );
         let connectedAccounts = await window.starcoin.request({
           method: 'stc_accounts',
         });
@@ -99,7 +103,7 @@ const Index = () => {
           scriptFunction.serialize(se);
           return hexlify(se.getBytes());
         })();
-        console.log('payloadInHex: ', payloadInHex)
+        console.log('payloadInHex: ', payloadInHex);
         const transactionHash = await starcoinProvider
           .getSigner()
           .sendUncheckedTransaction({
@@ -109,7 +113,7 @@ const Index = () => {
       }
     } catch (e) {
       console.log(e);
-      message.error('购买失败')
+      message.error('购买失败');
     }
   };
 
@@ -122,9 +126,16 @@ const Index = () => {
           setVisible(false);
         }}
         onOk={async () => {
-          const values = await form.validateFields();
-          console.log('values: ', values);
-          setVisible(false);
+          try {
+            const values = await form.validateFields();
+            await request.post('/onekey/add', {
+              ...values,
+              area: values.area.join('-'),
+            });
+            setVisible(false);
+          } catch (e) {
+            message.error('提交失败');
+          }
         }}
       >
         <Form
