@@ -134,7 +134,7 @@ const Index = () => {
             });
             setVisible(false);
           } catch (e) {
-            message.error('提交失败');
+            message.error(e.message || '提交失败');
           }
         }}
       >
@@ -149,12 +149,24 @@ const Index = () => {
           }}
         >
           <FormItem
-            label="交易地址"
+            label="交易 hash"
             name="tradeaddr"
             rules={[
               {
                 required: true,
-                message: '请填写交易地址',
+                message: '请填写交易 hash',
+              },
+            ]}
+          >
+            <Input placeholder="请填写" />
+          </FormItem>
+          <FormItem
+            label="账号地址"
+            name="address"
+            rules={[
+              {
+                required: true,
+                message: '请填写账号地址',
               },
             ]}
           >
@@ -196,7 +208,7 @@ const Index = () => {
           >
             <Cascader
               options={area}
-              placeholder="请选择"
+              placeholder="省、市、区"
               showSearch={(inputValue, path) => {
                 return path.some(
                   (option) =>
@@ -206,6 +218,18 @@ const Index = () => {
                 );
               }}
             />
+          </FormItem>
+          <FormItem
+            label="详细地址"
+            name="street"
+            rules={[
+              {
+                required: true,
+                message: '请填写详细地址',
+              },
+            ]}
+          >
+            <Input placeholder="小区楼栋/乡村名称" />
           </FormItem>
           <FormItem
             label="邮政编码"
