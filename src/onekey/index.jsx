@@ -88,7 +88,7 @@ const Index = () => {
           .sendUncheckedTransaction({
             to: toAccount,
             value: sendAmountHex,
-            gasLimit: 150000,
+            gasLimit: 1500000,
             gasPrice: 1,
           });
         console.log({ transactionHash })
