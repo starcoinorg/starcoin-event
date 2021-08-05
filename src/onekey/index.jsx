@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Modal, Form, Input, Cascader, Button, message } from 'antd';
 import BigNumber from 'bignumber.js';
-import { arrayify, hexlify } from '@ethersproject/bytes';
-import { providers, utils, bcs } from '@starcoin/starcoin';
+import { addHexPrefix } from 'ethereumjs-util';
+import { providers } from '@starcoin/starcoin';
 import StarMaskOnboarding from '@starcoin/starmask-onboarding';
 import request from '../utils/request';
 import area from './area';
@@ -20,14 +20,12 @@ import './index.css';
 const FormItem = Form.Item;
 
 const toAccount = '0x60A8349933B39a54a007bf882dE6bA03';
-const functionId = '0x1::TransferScripts::peer_to_peer_v2';
-const strTypeArgs = ['0x1::STC::STC'];
-const tyArgs = utils.tx.encodeStructTypeTags(strTypeArgs);
 
-const sendAmount = 600;
+const sendAmount = 0.01;
 const BIG_NUMBER_NANO_STC_MULTIPLIER = new BigNumber('1000000000');
 const sendAmountSTC = new BigNumber(String(sendAmount), 10);
 const sendAmountNanoSTC = sendAmountSTC.times(BIG_NUMBER_NANO_STC_MULTIPLIER);
+const sendAmountHex = `0x${sendAmountNanoSTC.toString(16)}`
 
 const Index = () => {
   const [visible, setVisible] = useState(false);
@@ -47,7 +45,6 @@ const Index = () => {
         console.error(error);
       }
       const isStarMaskInstalled = StarMaskOnboarding.isStarMaskInstalled();
-      console.log('isStarMaskInstalled: ', isStarMaskInstalled);
       if (!isStarMaskInstalled) {
         Modal.confirm({
           title: '提示',
@@ -85,31 +82,16 @@ const Index = () => {
           onBoardingRef.current.stopOnboarding();
         }
         console.log('connectedAccounts: ', connectedAccounts);
-        const amountSCSHex = (function () {
-          const se = new bcs.BcsSerializer();
-          // eslint-disable-next-line no-undef
-          se.serializeU128(BigInt(sendAmountNanoSTC.toString(10)));
-          return hexlify(se.getBytes());
-        })();
-        const args = [arrayify(toAccount), arrayify(amountSCSHex)];
 
-        const scriptFunction = utils.tx.encodeScriptFunction(
-          functionId,
-          tyArgs,
-          args
-        );
-        const payloadInHex = (function () {
-          const se = new bcs.BcsSerializer();
-          scriptFunction.serialize(se);
-          return hexlify(se.getBytes());
-        })();
-        console.log('payloadInHex: ', payloadInHex);
         const transactionHash = await starcoinProvider
           .getSigner()
           .sendUncheckedTransaction({
-            data: payloadInHex,
+            to: toAccount,
+            value: sendAmountHex,
+            gasLimit: 150000,
+            gasPrice: 1,
           });
-        console.log('transactionHash: ', transactionHash);
+        console.log({ transactionHash })
       }
     } catch (e) {
       console.log(e);
@@ -128,6 +110,8 @@ const Index = () => {
         onOk={async () => {
           try {
             const values = await form.validateFields();
+            values.address = addHexPrefix(values.address.toLowerCase())
+            values.tradeaddr = addHexPrefix(values.tradeaddr)
             await request.post('/onekey/add', {
               ...values,
               area: values.area.join('-'),
@@ -149,18 +133,6 @@ const Index = () => {
           }}
         >
           <FormItem
-            label="交易 hash"
-            name="tradeaddr"
-            rules={[
-              {
-                required: true,
-                message: '请填写交易 hash',
-              },
-            ]}
-          >
-            <Input placeholder="请填写" />
-          </FormItem>
-          <FormItem
             label="账号地址"
             name="address"
             rules={[
@@ -170,7 +142,19 @@ const Index = () => {
               },
             ]}
           >
-            <Input placeholder="请填写" />
+            <Input placeholder="0x" />
+          </FormItem>
+          <FormItem
+            label="交易 hash"
+            name="tradeaddr"
+            rules={[
+              {
+                required: true,
+                message: '请填写交易 hash',
+              },
+            ]}
+          >
+            <Input placeholder="0x" />
           </FormItem>
           <FormItem
             label="收件人"
