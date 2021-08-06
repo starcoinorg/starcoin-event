@@ -19,9 +19,9 @@ import './index.css';
 
 const FormItem = Form.Item;
 
-const toAccount = '0x60A8349933B39a54a007bf882dE6bA03';
+const toAccount = '0xd42cce7f1afe838b9f40a6583da07693';
 
-const sendAmount = 0.01;
+const sendAmount = 600;
 const BIG_NUMBER_NANO_STC_MULTIPLIER = new BigNumber('1000000000');
 const sendAmountSTC = new BigNumber(String(sendAmount), 10);
 const sendAmountNanoSTC = sendAmountSTC.times(BIG_NUMBER_NANO_STC_MULTIPLIER);
@@ -88,7 +88,7 @@ const Index = () => {
           .sendUncheckedTransaction({
             to: toAccount,
             value: sendAmountHex,
-            gasLimit: 1500000,
+            gasLimit: 150000,
             gasPrice: 1,
           });
         console.log({ transactionHash })
@@ -239,9 +239,9 @@ const Index = () => {
       <div className="detail">
         <i>优惠二：</i>
         <div>所有使用STC购买oneKey硬件钱包的用户均可参与抽取5台矿机</div>
-        <div>活动时间：2021.08.0X-2021.08.0X，活动共计3天</div>
+        <div>活动时间：2021.08.06-2021.08.09，活动共计3天</div>
         <div>
-          活动规则：活动限量购买，每人限量购买1台，总量300台先到先得，活动结束后从所有购买的用户抽取5位用户赠送矿机
+          活动规则：活动限量购买，每人限量购买1台，总量200台先到先得，活动结束后从所有购买的用户抽取5位用户赠送矿机
         </div>
       </div>
       <div style={{ textAlign: 'center', margin: '16px 0' }}>
