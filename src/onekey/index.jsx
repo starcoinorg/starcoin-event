@@ -112,10 +112,14 @@ const Index = () => {
             const values = await form.validateFields();
             values.address = addHexPrefix(values.address.toLowerCase())
             values.tradeaddr = addHexPrefix(values.tradeaddr)
-            await request.post('/onekey/add', {
-              ...values,
-              area: values.area.join('-'),
-            });
+            if (values.street2) {
+              values.street = values.street2
+              values.area = 'other'
+              delete values.street2
+            } else {
+              values.area = values.area.join('-')
+            }
+            await request.post('/onekey/add', values);
             setVisible(false);
           } catch (e) {
             message.error(e.message || '提交失败');
@@ -181,11 +185,11 @@ const Index = () => {
             <Input placeholder="请填写" />
           </FormItem>
           <FormItem
-            label="邮寄地址"
+            label="国内地址1"
             name="area"
             rules={[
               {
-                required: true,
+                required: false,
                 message: '请选择邮寄地址',
               },
             ]}
@@ -204,16 +208,28 @@ const Index = () => {
             />
           </FormItem>
           <FormItem
-            label="详细地址"
+            label="国内地址2"
             name="street"
             rules={[
               {
-                required: true,
+                required: false,
                 message: '请填写详细地址',
               },
             ]}
           >
             <Input placeholder="小区楼栋/乡村名称" />
+          </FormItem>
+          <FormItem
+            label="国外地址"
+            name="street2"
+            rules={[
+              {
+                required: false,
+                message: '请填写详细地址',
+              },
+            ]}
+          >
+            <Input placeholder="英文地址" />
           </FormItem>
           <FormItem
             label="邮政编码"
